@@ -1,6 +1,7 @@
 <?php  // frontend1.php
 
 // John M. Singleton
+// finished on W 1/1/2020
 // REFERENCE: Learning PHP, MySQL & JavaScript by Robin Nixon
 
 require_once '..\login_engraver.php';
@@ -34,8 +35,8 @@ Query 4: Output customer names and dates from orders that have been delivered. (
 Query 5: Output vendor names and addresses of vendors who make wood products. (The client may use
          this query in determining how many vendors he/she has that provide wood products.)
 
-</pre>
-<form action='frontend1.php' method='post'><pre>
+
+<form action='frontend1.php' method='post'>
 Enter A Query Number (1-5): <input type="text" name="choice"><input type="submit" value="Process">
 </pre></form>
 
@@ -51,11 +52,13 @@ if(isset($_POST['choice'])){
 			query2($conn);
 			break;
 		case "3":
-			//break;
+			query3($conn);
+			break;
 		case "4":
-			//break;
+			query4($conn);
+			break;
 		case "5":
-			echo "Not yet implemented";
+			query5($conn);
 			break;
 		default:
 			echo "Unrecognized selection";
@@ -66,21 +69,21 @@ if(isset($_POST['choice'])){
 $conn->close();
 
 function query1($conn){
-	$query = "SELECT Cx.Name, Cx.Line1, Cx.Line2, Cx.City, Cx.State, Cx.Zip, N.Note
+	$query = "SELECT Cx.Name, Cx.Line1, Cx.City, Cx.State, Cx.Zip, N.Note
 			   FROM customer as Cx, customer_note as N
 			   WHERE Cx.ID = N.Customer_id AND N.Note LIKE '%b%day%'";
 	$result = $conn->query($query);
 	if(!$result) die ("Database access failed");
 
 	$rows = $result->num_rows;
-	echo "<table><tr> <th>Name</th> <th>Line1</th> <th>Line2</th> <th>City</th> <th>State</th>
+	echo "<table><tr> <th>Name</th> <th>Line1</th> <th>City</th> <th>State</th>
 	        <th>Zip</th> <th>Note</th></tr>";
 
 	for($j = 0; $j < $rows; ++$j){
 		$row = $result->fetch_array(MYSQLI_NUM);
 
 		echo "<tr>";
-		for($k = 0; $k < 7; ++$k){
+		for($k = 0; $k < 6; ++$k){
 			echo "<td>" . htmlspecialchars($row[$k]) . "</td>";
 		}
 		echo "</tr>";
@@ -94,7 +97,7 @@ function query1($conn){
 function query2($conn){
 	$query = "SELECT P.Name, O.Sname, O.Price
 			   FROM PRODUCT AS P, OFFERED_IN AS O
-			   WHERE P.Name='Precision Walnut Plaques' AND P.SKU = O.PSKU";
+			   WHERE P.Name = 'Precision Walnut Plaques' AND P.SKU = O.PSKU";
 	$result = $conn->query($query);
 	if(!$result) die ("Database access failed");
 
@@ -106,6 +109,81 @@ function query2($conn){
 
 		echo "<tr>";
 		for($k = 0; $k < 3; ++$k){
+			echo "<td>" . htmlspecialchars($row[$k]) . "</td>";
+		}
+		echo "</tr>";
+	}
+
+	echo "</table>";
+
+	$result->close();
+}
+
+function query3($conn){
+	$query = "SELECT P.Name
+			   FROM MAKES AS M, PRODUCT AS P
+			   WHERE M.Vname = 'Crown Awards' AND M.PSKU = P.SKU";
+	$result = $conn->query($query);
+	if(!$result) die ("Database access failed");
+
+	$rows = $result->num_rows;
+	echo "<table><tr> <th>Name</th></tr>";
+
+	for($j = 0; $j < $rows; ++$j){
+		$row = $result->fetch_array(MYSQLI_NUM);
+
+		echo "<tr>";
+		for($k = 0; $k < 1; ++$k){
+			echo "<td>" . htmlspecialchars($row[$k]) . "</td>";
+		}
+		echo "</tr>";
+	}
+
+	echo "</table>";
+
+	$result->close();
+}
+
+function query4($conn){
+	$query = "SELECT C.Name, O.Date
+			   FROM CUSTOMER AS C, ORDERS AS O
+			   WHERE C.ID = O.Customer_id and O.Status = 'Delivered'";
+	$result = $conn->query($query);
+	if(!$result) die ("Database access failed");
+
+	$rows = $result->num_rows;
+	echo "<table><tr> <th>Name</th> <th>Date</th></tr>";
+
+	for($j = 0; $j < $rows; ++$j){
+		$row = $result->fetch_array(MYSQLI_NUM);
+
+		echo "<tr>";
+		for($k = 0; $k < 2; ++$k){
+			echo "<td>" . htmlspecialchars($row[$k]) . "</td>";
+		}
+		echo "</tr>";
+	}
+
+	echo "</table>";
+
+	$result->close();
+}
+
+function query5($conn){
+	$query = "SELECT DISTINCT M.Vname, V.Line1, V.City, V.State, V.Zip
+			   FROM MAKES AS M, VENDOR AS V, CATEGORY AS C, BELONGS_IN AS B
+			   WHERE C.Parent_cat = 'Wood' AND C.Name = B.CName AND B.PSKU = M.PSKU AND M.Vname = V.Name";
+	$result = $conn->query($query);
+	if(!$result) die ("Database access failed");
+
+	$rows = $result->num_rows;
+	echo "<table><tr> <th>VName</th> <th>Line1</th> <th>City</th> <th>State</th> <th>Zip</th></tr>";
+
+	for($j = 0; $j < $rows; ++$j){
+		$row = $result->fetch_array(MYSQLI_NUM);
+
+		echo "<tr>";
+		for($k = 0; $k < 6; ++$k){
 			echo "<td>" . htmlspecialchars($row[$k]) . "</td>";
 		}
 		echo "</tr>";
