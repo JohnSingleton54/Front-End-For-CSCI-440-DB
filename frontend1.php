@@ -14,6 +14,12 @@ $result = $conn->query($query);
 if(!$result) die ("Database access failed");*/
 
 echo <<<_END
+
+<html>
+<head>
+<title>Front End For CSCI 440 DB</title>
+</head>
+<body>
 <pre>
 Query 1: For each customer who has a customer note mentioning a birthday, output the name, address,
          and relevant customer note. (The purpose of this transaction is to provide the client a
@@ -38,12 +44,15 @@ Query 5: Output vendor names and addresses of vendors who make wood products. (T
 
 <form action='frontend1.php' method='post'>
 Enter A Query Number (1-5): <input type="text" name="choice"><input type="submit" value="Process">
-</pre></form>
+</form>
+</pre>
+</body>
+</html>
 
 _END;
 
 if(isset($_POST['choice'])){
-	$choice = get_post($conn, 'choice');
+	$choice = sanitizeMySQL($conn, $_POST['choice']);
 	switch($choice){
 		case "1":
 			query1($conn);
@@ -194,8 +203,19 @@ function query5($conn){
 	$result->close();
 }
 
-function get_post($conn, $var){
-  return $conn->real_escape_string($_POST[$var]);
+function sanitizeMySQL($conn, $var){
+  $var = $conn->real_escape_string($var);
+  $var = sanitizeString($var);
+  return $var;
+}
+
+function sanitizeString($var){
+	if(get_magic_quotes_gpc()){
+		$var = stripslashes($var);
+	}
+	$var = strip_tags($var);
+	$var = htmlentities($var);
+	return $var;
 }
 
 ?>
